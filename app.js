@@ -5,6 +5,7 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 require("dotenv").config();
 const userRoutes = require('./routes/user');
+const serverRoutes = require('./routes/server');
 
 // constants
 const { DB_USER, DB_PASSWORD } = process.env;
@@ -23,6 +24,7 @@ app.use(morgan());
 
 // routes
 app.use('/api/users', userRoutes);
+app.use('/api/servers', serverRoutes);
 app.get("/", (req, res) => res.send("Hello World!"));
 
 mongoose.connect(

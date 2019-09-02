@@ -49,7 +49,11 @@ router
 				.json({ message: "Username and password required." });
 		}
 		try {
-			const foundUser = await User.findOne({ username });
+			const foundUser = await User.findOne({ username })
+				.populate({
+					path: "servers",
+					select: "name createdOn numberOfUsers numberActive"
+				});
 			if (!foundUser) {
 				ErrorLogService.logError(req, { message: "User not found." });
 				return res

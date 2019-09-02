@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
 
 const errorLogSchema = new mongoose.Schema({
-	time: { type: mongoose.Schema.Types.Date, default: Date.now },
+	createdOn: { type: mongoose.Schema.Types.Date, default: Date.now },
 	body: { type: Object },
-	headers: { type: Object },
+	headers: { type: Object || String },
 	error: { type: Object },
 	request: String,
 	hostname: String,
