@@ -44,7 +44,7 @@ router.post("/mine", async (req, res) => {
 	}
 })
 .post("/create", async (req,res) => {
-	const { name, token } = req.body;
+	const { name, description, token } = req.body;
 	try {
 		const user = await ValidationService.validateUser(token);
 		if (!user) {
@@ -52,17 +52,18 @@ router.post("/mine", async (req, res) => {
 		}
 		const newServer = new Server({
 			createdBy: user._id,
-			name
+			name,
+			description
 		})
 		const savedServer = await newServer.save();
 		res.status(200).json({ savedServer });
 	} catch (err) {
-		ErrorLogService.logEreror(req, err);
+		ErrorLogService.logError(req, err);
 		res.status(500).json({
 			message:
-				"There was an error finding servers. We're working on it."
+				"There was an error creating servers. We're working on it."
 		});
-	}
+	} 
 })
 .post("/join", async (req, res) => {
 	const { token, serverId } = req.body;
@@ -73,12 +74,18 @@ router.post("/mine", async (req, res) => {
 		}
 		const foundServer = await Server.findById(serverId);
 		const updatedServer = await foundServer.addMember(user);
+		if (updatedServer.error) {
+			ErrorLogService.logError(req, updatedServer.error);
+			res.status(500).json({
+				message: "There was an error joining the server. We're working on it."
+			});
+		}
 		res.status(200).json({ updatedServer });
 	} catch (err) {
-		ErrorLogService.logEreror(req, err);
+		ErrorLogService.logError(req, err);
 		res.status(500).json({
 			message:
-				"There was an error finding servers. We're working on it."
+				"There was an error joining the server. We're working on it."
 		});
 	}
 })

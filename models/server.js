@@ -1,32 +1,54 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const serverSchema = new mongoose.Schema({
-	name: { type: String, minLength: 4, maxLength: 128, required: true},
+	name: { type: String, minLength: 4, maxLength: 128, required: true },
 	description: { type: String, maxLength: 256, required: true },
-	members: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-	channels: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Channel' }],
+	members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+	channels: [{ type: mongoose.Schema.Types.ObjectId, ref: "Channel" }],
 	memberCount: { type: Number, default: 0 },
 	activeCount: { type: Number, default: 0 },
 	createdOn: { type: Date, default: Date.now },
-	createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
+	createdBy: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: "User",
+		required: true
+	}
 });
 
-serverSchema.statics.addMember = async function(memberToAdd) {
-	const memberCount = this.memberCount + 1;
-	const servers = [...memberToAdd.servers, this._id];
-	memberToAdd.update({ servers });
-  return await this.update({
-  	memberCount,
-  	$set: {
-  		members: [...members, memberToAdd._id]
-  	}
-  });
+serverSchema.methods.addMember = async function(memberToAdd) {
+	const retObj = { success: false };
+	try {
+		memberToAdd.update({
+			$addToSet: { servers: this._id }
+		});
+		const savedServer = await this.update({
+			$addToSet: { members: memberToAdd._id},
+			memberCount: this.memberCount + 1
+		});
+		retObj.data = savedServer;
+		retObj.success = true;
+	} catch (err) {
+		retObj.error = err;
+	}
+	return retObj;
 };
 
-serverSchema.statics.removeMember = async function(memberToRemove) {
-	const memberCount = this.memberCount - 1;
-	const members = this.members.filter(member => member._id !== memberToRemove._id);
-  return await this.update({ memberCount, members });
+serverSchema.methods.removeMember = async function(memberToRemove) {
+	const retObj = { success: false };
+	try {
+		memberToAdd.update({
+			$pull: { servers: this._id }
+		});
+		const savedServer = await this.update({
+			$pull: { members: memberToAdd._id },
+			memberCount: memberCount - 1
+		});
+		retObj.data = savedServer;
+		retObj.success = true;
+	} catch (err) {
+		retObj.error = err;
+	}
+	return retObj;
 };
 
-module.exports = new mongoose.model('Server', serverSchema);
+module.exports = new mongoose.model("Server", serverSchema);
