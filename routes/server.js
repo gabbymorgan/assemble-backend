@@ -27,14 +27,15 @@ router.post("/mine", async (req, res) => {
 	}
 })
 .post("/search", async (req, res) => {
-	const { token, query } = req.body;
-	const allowedQueries = ["title", "description"]
+	const { token, query, queryType } = req.body;
+	const allowedQueries = ["name", "description"]
 	try {
 		const user = await ValidationService.validateUser(token);
 		if (!user) {
 			return res.status(401).json({ message: "Unauthorized." })
 		}
-		const servers = Server.find({ [queryType]: query })
+		const servers = await Server.find({ [queryType]: { $regex: query, $options: "i"} });
+		res.status(200).json({ servers });
 	} catch(err) {
 		ErrorLogService.logError(req, err);
 		res.status(500).json({
