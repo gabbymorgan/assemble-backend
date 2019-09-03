@@ -76,7 +76,31 @@ router.post("/mine", async (req, res) => {
 		const updatedServer = await foundServer.addMember(user);
 		if (updatedServer.error) {
 			ErrorLogService.logError(req, updatedServer.error);
-			res.status(500).json({
+			return res.status(500).json({
+				message: "There was an error joining the server. We're working on it."
+			});
+		}
+		res.status(200).json({ updatedServer });
+	} catch (err) {
+		ErrorLogService.logError(req, err);
+		res.status(500).json({
+			message:
+				"There was an error joining the server. We're working on it."
+		});
+	}
+})
+.post("/leave", async (req, res) => {
+	const { token, serverId } = req.body;
+	try {
+		const user = await ValidationService.validateUser(token);
+		if (!user) {
+			return res.status(401).json({ message: "Unauthorized." });
+		}
+		const foundServer = await Server.findById(serverId);
+		const updatedServer = await foundServer.removeMember(user);
+		if (updatedServer.error) {
+			ErrorLogService.logError(req, updatedServer.error);
+			return res.status(500).json({
 				message: "There was an error joining the server. We're working on it."
 			});
 		}

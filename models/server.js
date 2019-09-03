@@ -36,12 +36,12 @@ serverSchema.methods.addMember = async function(memberToAdd) {
 serverSchema.methods.removeMember = async function(memberToRemove) {
 	const retObj = { success: false };
 	try {
-		memberToAdd.update({
+		memberToRemove.update({
 			$pull: { servers: this._id }
 		});
 		const savedServer = await this.update({
-			$pull: { members: memberToAdd._id },
-			memberCount: memberCount - 1
+			$pull: { members: memberToRemove._id},
+			memberCount: this.memberCount - 1
 		});
 		retObj.data = savedServer;
 		retObj.success = true;
