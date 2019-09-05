@@ -18,7 +18,7 @@ const serverSchema = new mongoose.Schema({
 serverSchema.methods.addMember = async function(memberToAdd) {
 	const retObj = { success: false };
 	try {
-		memberToAdd.update({
+		await memberToAdd.update({
 			$addToSet: { servers: this._id }
 		});
 		const savedServer = await this.update({
